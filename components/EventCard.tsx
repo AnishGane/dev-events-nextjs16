@@ -4,15 +4,18 @@ import Link from "next/link";
 interface Props {
   title: string;
   image: string;
-  slug: string;
+  // Slug may be undefined on unsaved/partial objects; callers should ideally ensure it exists.
+  slug?: string;
   location: string;
   date: string;
   time: string;
 }
 
 const EventCard = ({ title, image, slug, location, date, time }: Props) => {
+  const href = slug ? `/events/${slug}` : "#";
+
   return (
-    <Link href={`/events/${slug}`} id="event-card">
+    <Link href={href} id="event-card">
       <Image
         src={image}
         alt={title}
