@@ -3,7 +3,7 @@ import mongoose, { Schema, type Document, type Model } from "mongoose";
 // Event attributes used when creating a new Event document
 export interface EventAttrs {
   title: string;
-  slug?: string;
+  slug: string;
   description: string;
   overview: string;
   image: string;
