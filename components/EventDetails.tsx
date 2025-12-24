@@ -1,11 +1,11 @@
 import React from "react";
 import { notFound } from "next/navigation";
 import { EventDocument } from "@/database";
+import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 import Image from "next/image";
 import BookEvent from "@/components/BookEvent";
 import EventCard from "@/components/EventCard";
 import { cacheLife } from "next/cache";
-import { getSimilarEventsBySlug } from "@/lib/actions/event.actions";
 
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
 
@@ -45,10 +45,10 @@ const EventTags = ({ tags }: { tags: string[] }) => (
   </div>
 );
 
-const EventDetails = async ({ params }: { params: Promise<{ slug: string }> }) => {
+const EventDetails = async ({ params }: { params: Promise<string> }) => {
   "use cache";
   cacheLife("hours");
-  const { slug } = await params;
+  const slug = await params;
 
   let event;
   try {
@@ -157,7 +157,7 @@ const EventDetails = async ({ params }: { params: Promise<{ slug: string }> }) =
               <p className="text-sm">Be the first to book your spot!</p>
             )}
 
-            <BookEvent  />
+            <BookEvent eventId={event._id} slug={event.slug} />
           </div>
         </aside>
       </div>

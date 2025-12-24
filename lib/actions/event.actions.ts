@@ -6,9 +6,6 @@ import { connectToDatabase } from "../mongodb";
 export const getSimilarEventsBySlug = async (slug: string) => {
   try {
     await connectToDatabase();
-export const getSimilarEventsBySlug = async (slug: string) => {
-  try {
-    await connectToDatabase();
     const event = await Event.findOne({ slug });
 
     if (!event) {
@@ -19,10 +16,6 @@ export const getSimilarEventsBySlug = async (slug: string) => {
       _id: { $ne: event._id },
       tags: { $in: event.tags },
     }).lean();
-  } catch {
-    return [];
-  }
-};
   } catch {
     return [];
   }
