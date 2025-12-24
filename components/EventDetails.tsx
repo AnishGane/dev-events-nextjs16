@@ -24,26 +24,70 @@ const EventDetailItem = ({
   </div>
 );
 
-const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => (
-  <div className="agenda">
-    <h2>Agenda</h2>
-    <ul>
-      {agendaItems.map((item) => (
-        <li key={item}>{item}</li>
-      ))}
-    </ul>
-  </div>
-);
+const EventAgenda = ({ agendaItems }: { agendaItems: string[] }) => {
+  const normalizedAgenda = agendaItems.flatMap((item) => {
+    // Case 1: item is a stringified array
+    if (item.trim().startsWith("[") && item.trim().endsWith("]")) {
+      try {
+        const parsed = JSON.parse(item);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch {
+        // fall through to normal handling
+      }
+    }
 
-const EventTags = ({ tags }: { tags: string[] }) => (
-  <div className="flex flex-row gap-1.5 flex-wrap">
-    {tags.map((tag) => (
-      <div className="pill" key={tag}>
-        {tag}
-      </div>
-    ))}
-  </div>
-);
+    // Case 2: normal string
+    return item;
+  });
+
+  return (
+    <div className="agenda">
+      <h2>Agenda</h2>
+      <ul>
+        {normalizedAgenda.flatMap((item, index) =>
+          item
+            .split(",")
+            .map((part: string, subIndex: number) => (
+              <li key={`${index}-${subIndex}`}>{part.trim()}</li>
+            ))
+        )}
+      </ul>
+    </div>
+  );
+};
+
+const EventTags = ({ tags }: { tags: string[] }) => {
+  const normalizedtag = tags.flatMap((item) => {
+    // Case 1: item is a stringified array
+    if (item.trim().startsWith("[") && item.trim().endsWith("]")) {
+      try {
+        const parsed = JSON.parse(item);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch {
+        // fall through to normal handling
+      }
+    }
+
+    // Case 2: normal string
+    return item;
+  });
+
+  return (
+    <div className="flex flex-row gap-1.5 flex-wrap">
+      {normalizedtag.flatMap((item, index) =>
+        item.split(",").map((part: string, subIndex: number) => (
+          <div className="pill" key={`${index}-${subIndex}`}>
+            {part.trim()}
+          </div>
+        ))
+      )}
+    </div>
+  );
+};
 
 const EventDetails = async ({ params }: { params: Promise<string> }) => {
   "use cache";

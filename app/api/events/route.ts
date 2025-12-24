@@ -3,95 +3,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
 
-const API_AUTH_TOKEN: string | undefined = process.env.API_AUTH_TOKEN;
-
-interface AuthFailureBody {
-  message: string;
-}
-
-type AuthResult =
-  | { ok: true }
-  | { ok: false; response: NextResponse<AuthFailureBody> };
-
-/**
- * Simple Bearer-token based authentication for events API routes.
- * Expects an Authorization: Bearer <token> header where <token>
- * matches the API_AUTH_TOKEN environment variable.
- */
-function authenticateRequest(req: NextRequest): AuthResult {
-  if (!API_AUTH_TOKEN) {
-    console.error(
-      "API_AUTH_TOKEN environment variable is not set. Authentication is misconfigured."
-    );
-    return {
-      ok: false,
-      response: NextResponse.json<AuthFailureBody>(
-        {
-          message: "Server authentication is not configured.",
-        },
-        { status: 500 }
-      ),
-    };
-  }
-
-  const authHeader = req.headers.get("authorization");
-
-  if (!authHeader) {
-    console.warn(
-      "Unauthenticated request to /api/events: missing Authorization header."
-    );
-    return {
-      ok: false,
-      response: NextResponse.json<AuthFailureBody>(
-        {
-          message:
-            "Authentication required. Provide a Bearer token in the Authorization header.",
-        },
-        { status: 401 }
-      ),
-    };
-  }
-
-  const [scheme, token] = authHeader.split(" ");
-
-  if (!scheme || scheme.toLowerCase() !== "bearer" || !token) {
-    console.warn(
-      "Unauthenticated request to /api/events: invalid Authorization header format."
-    );
-    return {
-      ok: false,
-      response: NextResponse.json<AuthFailureBody>(
-        {
-          message:
-            "Authentication required. Use 'Authorization: Bearer <token>'.",
-        },
-        { status: 401 }
-      ),
-    };
-  }
-
-  if (token !== API_AUTH_TOKEN) {
-    console.warn("Unauthorized request to /api/events: invalid token.");
-    return {
-      ok: false,
-      response: NextResponse.json<AuthFailureBody>(
-        {
-          message: "Invalid authentication token.",
-        },
-        { status: 403 }
-      ),
-    };
-  }
-
-  return { ok: true };
-}
-
 export async function POST(req: NextRequest) {
-  const auth = authenticateRequest(req);
-  if (!auth.ok) {
-    return auth.response;
-  }
-
   try {
     await connectToDatabase();
 
@@ -151,7 +63,9 @@ export async function POST(req: NextRequest) {
         .end(buffer);
     });
 
-    (event as { image: string }).image = (uploadResult as { secure_url: string }).secure_url;
+    (event as { image: string }).image = (
+      uploadResult as { secure_url: string }
+    ).secure_url;
     const createdEvent = await Event.create({
       ...event,
       tags: tags,
@@ -175,11 +89,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const auth = authenticateRequest(req);
-  if (!auth.ok) {
-    return auth.response;
-  }
-
+ 
   try {
     await connectToDatabase();
 
